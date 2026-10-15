@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acadex - التحليل الإحصائي والترجمة الأكاديمية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #fcfbf9; }
+        .academic-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; font-weight: 600; }
+        .academic-table th, .academic-table td { border: 1px solid #64748b; padding: 8px; }
+        .academic-header { background-color: #8da4be; color: #000; font-weight: 900; }
+        .academic-subheader { background-color: #dce3e9; font-weight: 700; }
+        .academic-summary { background-color: #b5c6d6; font-weight: 900; }
+        .academic-total { background-color: #ffd86e; font-weight: 900; color: #422000; }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between selection:bg-amber-200 selection:text-teal-950">
+
+    <header class="w-full bg-white/90 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-teal-950 text-amber-400 flex items-center justify-center font-black text-2xl shadow-lg border border-amber-500/30">🏛️</div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-tight text-teal-950 flex items-center gap-1">acadex<span class="text-amber-600">.</span></h1>
+                    <p class="text-[11px] text-stone-500 font-semibold tracking-wide">جامعة الأنبار · كلية الإدارة والاقتصاد</p>
+                </div>
+            </div>
+            <div class="flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200">
+                <button type="button" onclick="switchPage('translate')" id="navTranslate" class="px-4 py-1.5 text-xs font-bold rounded-lg transition bg-teal-950 text-amber-300 shadow-sm">مكتب الترجمة</button>
+                <button type="button" onclick="switchPage('spss')" id="navSpss" class="px-4 py-1.5 text-xs font-bold rounded-lg transition text-stone-600 hover:text-stone-900">مختبر الـ SPSS الإحصائي</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-10 w-full flex-grow">
+        
+        <!-- ======================= -->
+        <!-- صفحة الترجمة            -->
+        <!-- ======================= -->
+        <div id="pageTranslate" class="space-y-8">
+            <div class="text-center mb-10">
+                <span class="inline-flex items-center gap-1.5 bg-amber-50 text-amber-900 text-xs font-bold px-4 py-1.5 rounded-full mb-4 border border-amber-200/80 shadow-sm">✨ مساحة الترجمة الأكاديمية</span>
+                <h2 class="text-4xl sm:text-6xl font-black text-teal-950 tracking-tight mb-4 leading-tight">افهم الفكرة، لا الحاجز.</h2>
+                <p class="text-stone-600 text-base sm:text-lg max-w-2xl mx-auto font-medium">ترجم أبحاثك الأجنبية مع الاحتفاظ التام بالتنسيق والجداول.</p>
+            </div>
+
+            <div class="bg-white/90 backdrop-blur-md rounded-3xl border border-stone-200/90 shadow-2xl p-6 sm:p-10 mb-8">
+                
+                <!-- حقل إدخال مفتاح الـ API الخاص بالطالب -->
+                <div class="mb-6 bg-amber-50 p-4 rounded-xl border border-amber-200">
+                    <label class="block text-[11px] font-extrabold text-amber-900 mb-2">🔑 مفتاح الترجمة (DeepL API Key):</label>
+                    <input type="text" id="userApiKeyInput" placeholder="أدخل مفتاحك المجاني الذي ينتهي بـ :fx هنا" class="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-xs font-bold focus:border-teal-600 focus:outline-none">
+                    <p class="text-[10px] text-amber-700 mt-1 font-semibold">المفتاح مطلوب للترجمة. كل مستخدم يضع مفتاحه الخاص لضمان عدم توقف الخدمة.</p>
+                </div>
+
+                <div id="dropZone" class="border-2 border-dashed border-stone-300 hover:border-teal-800 rounded-2xl p-10 text-center bg-stone-50/70 transition-all cursor-pointer mb-8">
+                    <input type="file" id="fileInput" class="hidden" accept=".pdf,.docx,.txt">
+                    <button type="button" onclick="document.getElementById('fileInput').click()" class="px-6 py-3 bg-teal-950 hover:bg-teal-900 text-amber-300 text-xs font-bold rounded-xl shadow-md transition">استعراض الملفات</button>
+                    <p id="uploadTitle" class="text-xs text-stone-500 mt-3 font-semibold">لم يتم اختيار ملف</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-2">لغة المستند (من):</label>
+                        <select id="sourceLangSelect" class="w-full bg-white border border-stone-300 rounded-xl px-4 py-3 text-xs font-bold shadow-sm"><option value="auto">🔍 اكتشاف تلقائي</option></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-2">الترجمة المطلوبة (إلى):</label>
+                        <select id="targetLangSelect" class="w-full bg-white border border-stone-300 rounded-xl px-4 py-3 text-xs font-bold shadow-sm"><option value="ar">العربية</option><option value="en">الإنجليزية</option></select>
+                    </div>
+                </div>
+
+                <button type="button" id="translateBtn" class="w-full py-4 bg-teal-950 hover:bg-teal-900 text-amber-300 font-black text-sm rounded-2xl shadow-xl transition flex items-center justify-center gap-3">
+                    <span id="translateBtnText">ترجم المستند واحتفظ بالتنسيق الكامل</span>
+                </button>
+            </div>
+
+            <div id="resultContainer" class="hidden bg-white p-6 rounded-2xl border border-teal-800 shadow-xl">
+                <a id="downloadLinkBtn" href="#" class="px-5 py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center mb-4">📥 تنزيل الملف المترجم</a>
+                <div id="translatedTextOutput" class="bg-stone-50 p-4 rounded-xl text-sm text-stone-700 font-bold border border-stone-200"></div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!-- صفحة التحليل الإحصائي   -->
+        <!-- ======================= -->
+        <div id="pageSpss" class="hidden space-y-8">
+            <div class="text-center mb-10">
+                <span class="inline-flex items-center gap-1.5 bg-teal-50 text-teal-900 text-xs font-bold px-4 py-1.5 rounded-full mb-4 border border-teal-200 shadow-sm">📊 مختبر التحليل الإحصائي الأكاديمي</span>
+                <h2 class="text-3xl sm:text-5xl font-black text-teal-950 tracking-tight mb-3">اختر جدول التحليل الإحصائي</h2>
+                <p class="text-stone-600 text-sm max-w-xl mx-auto font-medium">تم ضبط المخرجات لتطابق تنسيقات رسائل الماجستير وبحوث التخرج.</p>
+            </div>
+
+            <div class="bg-white/90 backdrop-blur-md rounded-3xl border border-stone-200/90 shadow-2xl p-6 sm:p-10 mb-8">
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-stone-700 mb-2">نوع التحليل المطلوب:</label>
+                    <select id="spssTableSelect" class="w-full bg-white border border-stone-300 rounded-xl px-4 py-3 text-xs font-bold text-stone-800 shadow-sm focus:border-teal-600 focus:outline-none">
+                        <option value="descriptive">1. جدول الإحصاء الوصفي (الفقرات والأبعاد)</option>
+                        <option value="correlation">2. جدول مصفوفة ارتباط بيرسون</option>
+                        <option value="simple_regression">3. جدول علاقة التأثير (B, R², F)</option>
+                        <option value="multiple_regression">4. جدول تحليل الانحدار المتعدد (ANOVA & Coefficients)</option>
+                        <option value="gender">5. الجداول الديموغرافية: الجنس (النوع)</option>
+                        <option value="age">6. الجداول الديموغرافية: العمر</option>
+                        <option value="education">7. الجداول الديموغرافية: المؤهل العلمي</option>
+                        <option value="experience">8. الجداول الديموغرافية: سنوات الخدمة</option>
+                    </select>
+                </div>
+
+                <div class="mb-6 bg-slate-50 p-5 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-extrabold text-slate-800 mb-2">⚙️ 1. تجميع الأسئلة إلى (أبعاد):</label>
+                        <input type="text" id="dimSplitInput" placeholder="مثال: 5 (كل 5 أسئلة بُعد) أو 4,5,3" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold focus:border-teal-600 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-extrabold text-slate-800 mb-2">⚙️ 2. تجميع الأبعاد إلى (متغيرات):</label>
+                        <input type="text" id="varSplitInput" placeholder="مثال: 4 (كل 4 أبعاد متغير مستقل/تابع)" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold focus:border-teal-600 focus:outline-none">
+                    </div>
+                </div>
+
+                <div id="spssDropZone" class="border-2 border-dashed border-stone-300 hover:border-teal-800 rounded-2xl p-8 text-center bg-stone-50/70 transition-all cursor-pointer mb-6">
+                    <input type="file" id="spssFileInput" class="hidden" accept=".xlsx,.xls,.csv,.docx">
+                    <button type="button" onclick="document.getElementById('spssFileInput').click()" class="px-5 py-2.5 bg-teal-950 text-amber-300 text-xs font-bold rounded-xl shadow">استعراض ملف الإكسل</button>
+                    <p id="spssUploadTitle" class="text-xs text-stone-500 mt-3 font-semibold">لم يتم اختيار ملف</p>
+                </div>
+
+                <button type="button" onclick="runSpssAnalysis()" class="w-full py-4 bg-teal-950 hover:bg-teal-900 text-amber-300 font-black text-sm rounded-2xl shadow-xl transition flex items-center justify-center gap-2">
+                    <span>🚀 توليد الجدول الأكاديمي</span>
+                </button>
+            </div>
+
+            <div id="spssResultContainer" class="hidden bg-white p-6 rounded-2xl border border-teal-800 shadow-xl overflow-x-auto">
+                <div id="validationAlert" class="mb-4 p-4 bg-teal-50 border border-teal-200 rounded-xl flex items-center justify-between text-xs font-bold shadow-sm">
+                    <span class="text-teal-800 text-sm" id="validCountTxt">✅ تم قبول: 0 استبانة</span>
+                    <span class="text-rose-700 text-sm" id="rejectedCountTxt">❌ تم إلغاء: 0 استبانة ناقصة</span>
+                </div>
+                <div id="spssTableContent"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="w-full border-t border-stone-200 bg-white py-6 text-center text-xs text-stone-500">
+        <p>منصة Acadex للأبحاث والدراسات الأكاديمية · جامعة الأنبار © 2026</p>
+    </footer>
+
+    <!-- ======================= -->
+    <!-- سكربت الجافاسكربت         -->
+    <!-- ======================= -->
+    <script>
+        // التنقل بين الصفحات
+        function switchPage(page) {
+            document.getElementById('pageTranslate').classList.toggle('hidden', page !== 'translate');
+            document.getElementById('pageSpss').classList.toggle('hidden', page === 'translate');
+            
+            if(page === 'translate') {
+                document.getElementById('navTranslate').className = "px-4 py-1.5 text-xs font-bold rounded-lg transition bg-teal-950 text-amber-300 shadow-sm";
+                document.getElementById('navSpss').className = "px-4 py-1.5 text-xs font-bold rounded-lg transition text-stone-600 hover:text-stone-900";
+            } else {
+                document.getElementById('navSpss').className = "px-4 py-1.5 text-xs font-bold rounded-lg transition bg-teal-950 text-amber-300 shadow-sm";
+                document.getElementById('navTranslate').className = "px-4 py-1.5 text-xs font-bold rounded-lg transition text-stone-600 hover:text-stone-900";
+            }
+        }
+
+        // إدارة الترجمة
+        document.getElementById('fileInput').addEventListener('change', (e) => { 
+            if(e.target.files.length > 0) document.getElementById('uploadTitle').innerText = "تم اختيار الملف: " + e.target.files[0].name;
+        });
+
+        document.getElementById('translateBtn').addEventListener('click', async () => {
+            const file = document.getElementById('fileInput').files[0];
+            const apiKey = document.getElementById('userApiKeyInput').value.trim();
+            
+            if (!apiKey) return alert('الرجاء إدخال مفتاح DeepL الخاص بك في المربع المخصص أعلاه.');
+            if (!file) return alert('الرجاء اختيار ملف للترجمة أولاً.');
+            
+            const formData = new FormData(); 
+            formData.append('file', file); 
+            formData.append('targetLang', document.getElementById('targetLangSelect').value);
+            formData.append('userApiKey', apiKey);
+            
+            const btnText = document.getElementById('translateBtnText');
+            btnText.innerText = "جاري الترجمة، يرجى الانتظار...";
+            
+            try {
+                const res = await fetch('http://127.0.0.1:8000/api/translate/upload', { method: 'POST', body: formData });
+                const result = await res.json();
+                
+                if (res.ok && result.success) {
+                    document.getElementById('resultContainer').classList.remove('hidden');
+                    document.getElementById('translatedTextOutput').innerText = result.translated_text;
+                    document.getElementById('downloadLinkBtn').href = result.download_url;
+                    alert('✅ تمت المعالجة بنجاح!');
+                } else {
+                    alert('❌ خطأ: ' + (result.detail || 'فشل المعالجة. تأكد من صحة مفتاح الـ API.'));
+                }
+            } catch (err) { 
+                alert('❌ تعذر الاتصال بالسيرفر. تأكد من تشغيل py main.py'); 
+            } finally { 
+                btnText.innerText = "ترجم المستند واحتفظ بالتنسيق الكامل"; 
+            }
+        });
+
+        // إدارة التحليل الإحصائي
+        document.getElementById('spssFileInput').addEventListener('change', (e) => { 
+            if(e.target.files.length > 0) document.getElementById('spssUploadTitle').innerText = "تم اختيار الملف: " + e.target.files[0].name;
+        });
+
+        async function runSpssAnalysis() {
+            const file = document.getElementById('spssFileInput').files[0];
+            if (!file) return alert('الرجاء رفع ملف بيانات الاستبيانات أولاً.');
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('tableType', document.getElementById('spssTableSelect').value);
+            formData.append('dimSplit', document.getElementById('dimSplitInput').value);
+            formData.append('varSplit', document.getElementById('varSplitInput').value);
+
+            try {
+                const res = await fetch('http://127.0.0.1:8000/api/analyze/statistics', { method: 'POST', body: formData });
+                const json = await res.json();
+
+                if (res.ok && json.success) {
+                    document.getElementById('spssResultContainer').classList.remove('hidden');
+                    document.getElementById('validCountTxt').innerText = `✅ تم قبول واعتماد: ${json.valid_n} استبانة`;
+                    document.getElementById('rejectedCountTxt').innerText = `❌ تم استبعاد وإلغاء: ${json.rejected_n} استبانة ناقصة`;
+                    
+                    const container = document.getElementById('spssTableContent');
+                    let html = '';
+                    
+                    if(json.type === 'demographic') {
+                        html += `<table class="academic-table"><thead><tr><th colspan="3" class="academic-header">${json.title}</th></tr><tr class="academic-subheader"><th>الفئة / التصنيف</th><th>العدد (التكرار)</th><th>النسبة المئوية %</th></tr></thead><tbody>`;
+                        json.data.forEach(row => { html += `<tr><td>${row.category}</td><td>${row.count}</td><td>${row.percentage}</td></tr>`; });
+                        html += `<tr class="academic-summary"><td>المجموع الكلي</td><td>${json.valid_n}</td><td>100.0%</td></tr></tbody></table>`;
+                    }
+                    else if(json.type === 'descriptive_academic') {
+                        html += `<table class="academic-table"><thead><tr><th colspan="4" class="academic-header">الجدول: الإحصاء الوصفي للفقرات والأبعاد</th></tr><tr class="academic-subheader"><th>الفقرات</th><th>الوسط الحسابي</th><th>الانحراف المعياري</th><th>درجة الموافقة</th></tr></thead><tbody>`;
+                        json.data.forEach(row => { 
+                            if(row.is_header) html += `<tr class="academic-summary"><td colspan="4" style="text-align: right; padding-right: 15px;">${row.dimension}</td></tr>`;
+                            else if(row.is_summary) html += `<tr class="academic-summary"><td>${row.dimension}</td><td>${row.mean}</td><td>${row.std}</td><td>${row.approval}</td></tr>`;
+                            else if(row.is_total) html += `<tr class="academic-total"><td>${row.dimension}</td><td>${row.mean}</td><td>${row.std}</td><td>${row.approval}</td></tr>`;
+                            else html += `<tr><td style="text-align: right; padding-right: 15px;">${row.dimension}</td><td>${row.mean}</td><td>${row.std}</td><td>${row.approval}</td></tr>`;
+                        });
+                        html += `</tbody></table>`;
+                    } 
+                    else if(json.type === 'correlation_matrix') {
+                        html += `<table class="academic-table"><thead><tr><th colspan="${json.dep_headers.length + 2}" class="academic-header">الجدول: علاقة الارتباط بين متغيرات البحث</th></tr><tr class="academic-subheader"><th rowspan="2">المتغير المستقل</th><th colspan="${json.dep_headers.length}">المتغير التابع</th></tr><tr class="academic-subheader">`;
+                        json.dep_headers.forEach(h => html += `<th>${h}</th>`);
+                        html += `</tr></thead><tbody>`;
+                        json.data.forEach((row, i) => { 
+                            let trClass = (i === json.data.length - 1) ? "academic-summary" : "";
+                            html += `<tr class="${trClass}"><td style="text-align: right; font-weight: bold;">${row.indep_name}</td>`;
+                            json.dep_headers.forEach(h => html += `<td>${row.correlations[h]}</td>`);
+                            html += `</tr>`;
+                        });
+                        html += `</tbody></table>`;
+                    }
+                    else if(json.type === 'effect_table') {
+                        html += `<table class="academic-table"><thead><tr><th colspan="4" class="academic-header">الجدول: علاقة التأثير بين متغيرات البحث</th></tr><tr class="academic-subheader"><th rowspan="2">المتغير التابع: ${json.dep_name}<br>المتغير المستقل</th><th rowspan="2">F</th><th rowspan="2">R²</th><th rowspan="2">B</th></tr></thead><tbody>`;
+                        json.data.forEach(row => { 
+                            let trClass = row.is_summary ? "academic-summary" : "";
+                            html += `<tr class="${trClass}"><td style="text-align: right;">${row.indep}</td><td>${row.F}</td><td>${row.R2}</td><td>${row.B}</td></tr>`; 
+                        });
+                        html += `</tbody></table>`;
+                    }
+                    else if(json.type === 'multiple_regression_academic') {
+                        html += `<h4 class="font-bold text-slate-800 mb-2">جدول (أ): تحليل التباين (ANOVA)</h4><table class="academic-table mb-6"><thead><tr class="academic-header"><th>Model</th><th>Sum of Squares</th><th>DF</th><th>Mean Square</th><th>F</th><th>Sig</th></tr></thead><tbody>`;
+                        json.anova.forEach(row => { html += `<tr><td>${row.model}</td><td>${row.ss}</td><td>${row.df}</td><td>${row.ms}</td><td>${row.f}</td><td>${row.sig}</td></tr>`; });
+                        html += `</tbody></table>`;
+                        
+                        html += `<h4 class="font-bold text-slate-800 mb-2">جدول (ب): المعاملات (Coefficients)</h4><table class="academic-table"><thead><tr class="academic-header"><th>المتغيرات</th><th>R</th><th>R²</th><th>B</th><th>Std. Error</th><th>Beta</th><th>T</th><th>Sig</th></tr></thead><tbody>`;
+                        json.coeff.forEach(row => { html += `<tr><td style="text-align: right;">${row.variable}</td><td>${row.R}</td><td>${row.R2}</td><td>${row.B}</td><td>${row.std_error}</td><td>${row.Beta_std}</td><td>${row.T}</td><td>${row.sig}</td></tr>`; });
+                        html += `</tbody></table>`;
+                    }
+                    container.innerHTML = html;
+                } else {
+                    alert('❌ خطأ: ' + (json.detail || 'فشل التحليل.'));
+                }
+            } catch (err) { 
+                alert('❌ تعذر الاتصال بالسيرفر. تأكد من تشغيل py main.py'); 
+            }
+        }
+    </script>
+</body>
+</html>
